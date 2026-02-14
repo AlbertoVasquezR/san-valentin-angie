@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misión Principal: Angie</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #122c19;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Press Start 2P', cursive;
+            color: white;
+            text-align: center;
+            overflow: hidden; 
+        }
+
+        /* --- CAJAS DE DIÁLOGO --- */
+        .dialog-box {
+            background-color: rgba(0, 0, 0, 0.85);
+            border: 4px solid #f8b800;
+            border-radius: 10px;
+            padding: 30px 20px;
+            width: 85%;
+            max-width: 400px;
+            box-shadow: 0px 0px 20px rgba(248, 184, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .zelda-title { color: #f8b800; margin-bottom: 25px; line-height: 1.4; }
+        p { line-height: 1.6; margin-bottom: 20px; }
+        .text-small { font-size: 11px; color: #e0e0e0; }
+        
+        /* --- BOTONES --- */
+        .buttons-container {
+            margin-top: 20px; display: flex; justify-content: center;
+            align-items: center; gap: 20px; width: 100%; min-height: 100px; 
+        }
+        button {
+            background-color: black; color: white; border: 2px solid #f8b800;
+            padding: 15px; font-family: 'Press Start 2P', cursive;
+            font-size: 12px; cursor: pointer; transition: all 0.3s ease; 
+        }
+        button:active { background-color: #f8b800; color: black; }
+        #btnYes { background-color: #4CAF50; border-color: #4CAF50; color: white; }
+        
+        .hidden { display: none !important; }
+
+        /* --- FLORES --- */
+        .flowers-container {
+            display: flex; justify-content: center; gap: 30px; margin-top: 20px;
+        }
+        .flower-img {
+            width: 60px; height: auto; image-rendering: pixelated;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* --- ANIMACIÓN DEL COFRE Y EFECTOS --- */
+        #chestContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 5;
+        }
+
+        /* Rayos amarillos rotatorios de fondo */
+        .epic-rays {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200vw; 
+            height: 200vw;
+            background: repeating-conic-gradient(
+                from 0deg,
+                rgba(248, 184, 0, 0) 0deg 15deg,
+                rgba(248, 184, 0, 0.2) 15deg 30deg
+            );
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            transition: transform 2s ease-out, opacity 2s ease-in;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        @keyframes spinRays {
+            from { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+            to { transform: translate(-50%, -50%) rotate(360deg) scale(1); }
+        }
+
+        .epic-rays.glow {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            animation: spinRays 15s linear infinite; 
+        }
+
+        /* Estructura del Cofre basada en la referencia */
+        .chest-wrapper {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            z-index: 3;
+        }
+
+        /* Interior oscuro del cofre (se ve cuando se levanta la tapa) */
+        .chest-inside {
+            position: absolute;
+            top: 15px;
+            left: 5px;
+            width: 90px;
+            height: 40px;
+            background-color: black;
+            z-index: 2;
+        }
+
+        /* Base del cofre */
+        .chest-base {
+            position: absolute;
+            bottom: 0;
+            width: 100px;
+            height: 50px;
+            background-color: #c86116; /* Naranja/Marrón retro */
+            border: 6px solid #a5c2d6; /* Celeste metálico */
+            border-top: none;
+            box-sizing: border-box;
+            z-index: 4;
+        }
+
+        /* Detalles de madera en la base (las rayas plateadas) */
+        .chest-base::before, .chest-base::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 10px;
+            height: 100%;
+            background-color: #a5c2d6;
+        }
+        .chest-base::before { left: 15px; }
+        .chest-base::after { right: 15px; }
+
+        /* Cerradura en la base */
+        .chest-lock {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 30px;
+            background-color: #e2f0fb;
+            border: 4px solid black;
+            z-index: 5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Ojo de la cerradura */
+        .chest-lock::after {
+            content: '';
+            width: 8px;
+            height: 14px;
+            background-color: black;
+            border-radius: 4px 4px 0 0;
+        }
+
+        /* Tapa del cofre */
+        .chest-lid {
+            position: absolute;
+            top: 0;
+            width: 100px;
+            height: 50px;
+            background-color: #c86116;
+            border: 6px solid #a5c2d6;
+            border-bottom: none;
+            border-radius: 40px 40px 0 0; /* Tapa redondeada */
+            box-sizing: border-box;
+            z-index: 4;
+            /* Transición para levantar la tapa */
+            transition: transform 2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        /* Rayas plateadas en la tapa */
+        .chest-lid::before, .chest-lid::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            width: 10px;
+            height: 100%;
+            background-color: #a5c2d6;
+        }
+        .chest-lid::before { left: 15px; }
+        .chest-lid::after { right: 15px; }
+
+        /* Animación: La tapa se levanta y se achica ligeramente para simular profundidad */
+        .chest-lid.open {
+            transform: translateY(-40px) scaleY(0.85); 
+        }
+
+        /* Luz blanca interior que crece desde adentro del cofre */
+        .light-glow {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            width: 20px;
+            height: 10px;
+            background: white;
+            box-shadow: 0 0 50px 30px rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            z-index: 3; 
+            transition: transform 7s ease-in;
+            pointer-events: none;
+        }
+
+        .light-glow.glow {
+            transform: translate(-50%, -50%) scale(60); 
+        }
+
+        .fade-in { animation: fadeIn 2s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+    <audio id="zeldaSound" src="zelda-sound.mp3" preload="auto"></audio>
+
+    <div class="dialog-box" id="cardContainer">
+        <p class="zelda-title">¡Es peligroso ir solo!</p>
+        <p class="text-small">Angie, ¿Aceptarías ser mi San Valentín y mi compañera de aventuras?</p>
+        
+        <div class="buttons-container">
+            <button id="btnYes" onclick="acceptQuest()">SÍ</button>
+            <button id="btnNo" onclick="rejectQuest()">NO</button>
+        </div>
+    </div>
+
+    <div id="chestContainer" class="hidden">
+        <div class="epic-rays" id="epicRays"></div>
+        <div class="chest-wrapper">
+            <div class="chest-inside"></div>
+            <div class="light-glow" id="lightGlow"></div>
+            <div class="chest-base">
+                <div class="chest-lock"></div>
+            </div>
+            <div class="chest-lid" id="chestLid"></div>
+        </div>
+    </div>
+
+    <div class="dialog-box hidden fade-in" id="successMessage">
+        <p class="zelda-title">¡Misión Completada!</p>
+        <p class="text-small">Inventario listo para nuestra cita, mi amorcito. ❤️</p>
+        
+        <div class="flowers-container">
+            <img src="silent-princess.png" alt="Silent Princess" class="flower-img">
+            <img src="sundelion.png" alt="Sundelion" class="flower-img">
+        </div>
+    </div>
+
+    <script>
+        let noClickCount = 0;
+        const noMessages = ["¿Segura :(?", "¡Piénsalo bien!", "Cuidado...", "Me rompes el ❤️", "Última chance..."];
+
+        function rejectQuest() {
+            const btnNo = document.getElementById('btnNo');
+            const btnYes = document.getElementById('btnYes');
+
+            if (noClickCount < noMessages.length) {
+                btnNo.innerText = noMessages[noClickCount];
+                let yesScale = 1 + (noClickCount * 0.4);
+                btnYes.style.transform = `scale(${yesScale})`;
+                let noScale = 1 - (noClickCount * 0.15);
+                btnNo.style.transform = `scale(${noScale})`;
+                noClickCount++;
+            } else {
+                btnNo.classList.add('hidden');
+                btnYes.style.transform = `scale(2.5)`;
+            }
+        }
+
+        function acceptQuest() {
+            const sound = document.getElementById('zeldaSound');
+            sound.currentTime = 0;
+            sound.play().catch(error => console.log(error));
+
+            document.getElementById('cardContainer').classList.add('hidden');
+            document.getElementById('chestContainer').classList.remove('hidden');
+
+            setTimeout(() => {
+                // Ahora la tapa se levanta hacia arriba, imitando la imagen que enviaste
+                document.getElementById('chestLid').classList.add('open');
+                document.getElementById('epicRays').classList.add('glow');
+                document.getElementById('lightGlow').classList.add('glow');
+            }, 1500);
+
+            setTimeout(() => {
+                document.getElementById('chestContainer').classList.add('hidden');
+                document.getElementById('successMessage').classList.remove('hidden');
+            }, 8500);
+        }
+    </script>
+</body>
+</html>
